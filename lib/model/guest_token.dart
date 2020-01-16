@@ -1,5 +1,6 @@
 import 'package:flutter_app_dio_1/model/token.dart';
 
+@deprecated
 class GuestToken extends Token {
   GuestToken({accessToken, tokenType, expiresIn, scope}) : super(
       accessToken: accessToken,

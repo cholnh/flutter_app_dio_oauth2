@@ -1,33 +1,73 @@
-import 'package:flutter_app_dio_1/model/guest_token.dart';
-import 'package:flutter_app_dio_1/model/login_token.dart';
-import 'package:flutter_app_dio_1/oauth_token_reposiroty/oauth_token_repository.dart';
 import 'package:flutter_app_dio_1/model/token.dart';
+import 'package:flutter_app_dio_1/oauth_token_reposiroty/oauth_token_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   OauthTokenRepository oauthTokenRepository = OauthTokenRepository();
 
-  test('Oauth Token Repository Test - guest token', () async {
+  test('Oauth Token Repository Test - issueGuestToken()', () async {
     // Given
-    GuestToken guestToken;
+    Token guestToken;
+    bool isValidToken;
 
     // When
-    guestToken = await oauthTokenRepository.getGuestToken();
+    guestToken = await oauthTokenRepository.issueGuestToken();
+    isValidToken = await oauthTokenRepository.isValid(accessToken: guestToken.accessToken);
 
     // Then
-    expect(guestToken.accessToken, 'f03be1dd-37c4-4412-9090-1b4bd7224a6a',
-        reason: '토큰 기간 만료에 따른 토큰 변경');
+    expect(guestToken.accessToken != null, true);
+    expect(guestToken.refreshToken == null, true);
+    expect(guestToken.tokenMode, TokenMode.GUEST);
+    expect(isValidToken, true);
   });
 
-  test('Oauth Token Repository Test - login token', () async {
+  test('Oauth Token Repository Test - issueLoginToken()', () async {
     // Given
-    LoginToken loginToken;
+    Token loginToken;
+    bool isValidToken;
 
     // When
-    loginToken = await oauthTokenRepository.getLoginToken(username: 'admin', password: '1234');
+    loginToken = await oauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
+    isValidToken = await oauthTokenRepository.isValid(accessToken: loginToken.accessToken);
 
     // Then
-    expect(loginToken.accessToken, 'd8b84ee6-470b-4a40-83c9-bf5c742c178d',
-        reason: '토큰 기간 만료에 따른 토큰 변경');
+    expect(loginToken.accessToken != null, true);
+    expect(loginToken.refreshToken != null, true);
+    expect(loginToken.tokenMode, TokenMode.LOGIN);
+    expect(isValidToken, true);
+  });
+
+  test('Oauth Token Repository Test - issueLoginToken()', () async {
+    // Given
+    Token loginToken;
+    Token refreshedToken;
+
+    // When
+    loginToken = await oauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
+    refreshedToken = await oauthTokenRepository.refreshLoginToken(refreshToken: loginToken.refreshToken);
+
+    // Then
+    expect(refreshedToken.accessToken != null, true);
+    expect(refreshedToken.refreshToken != null, true);
+    expect(refreshedToken.accessToken != loginToken.accessToken, true);
+    expect(refreshedToken.refreshToken == loginToken.refreshToken, true);
+    expect(refreshedToken.tokenMode, TokenMode.LOGIN);
+    expect(await oauthTokenRepository.isValid(accessToken: refreshedToken.accessToken), true);
+    expect(await oauthTokenRepository.isValid(accessToken: refreshedToken.refreshToken), false);
+  });
+
+  test('Oauth Token Repository Test - isValid()', () async {
+    // Given
+    Token normalToken;
+    bool isValidToken, isInValidToken;
+
+    // When
+    normalToken = await oauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
+    isValidToken = await oauthTokenRepository.isValid(accessToken: normalToken.accessToken);
+    isInValidToken = await oauthTokenRepository.isValid(accessToken: 'this-is-abnormal-token');
+
+    // Then
+    expect(isValidToken, true);
+    expect(isInValidToken, false);
   });
 }

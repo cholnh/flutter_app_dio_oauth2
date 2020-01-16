@@ -1,16 +1,40 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_app_dio_1/model/guest_token.dart';
-import 'package:flutter_app_dio_1/model/login_token.dart';
 import 'package:flutter_app_dio_1/model/token.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../dio/dio_core.dart';
 import 'oauth_token_info.dart';
 
 class OauthTokenRepository {
-  Future<Token> getToken() {
-    return getGuestToken();
+  Future<Token> getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Token _token = prefs.get('__oauth_token__') ?? await issueGuestToken();
+
+    _token = isValid(accessToken: _token.accessToken)
+      ? _token
+      : _token.tokenMode == TokenMode.GUEST
+        ? issueGuestToken()
+        : refreshLoginToken(refreshToken: _token.refreshToken);
+
+    return issueGuestToken();
   }
 
-  getGuestToken() async {
+
+  isValid({String accessToken}) async {
+    try {
+      var res = await dio.post('/oauth/check_token',
+          data: FormData.fromMap({
+            'token': accessToken
+          })
+      );
+      if(res != null && res.statusCode == 200) {
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  }
+
+  issueGuestToken() async {
     try {
       var res = await dio.post('/oauth/token',
           options: Options(headers: {
@@ -21,13 +45,13 @@ class OauthTokenRepository {
           })
       );
       if(res != null && res.statusCode == 200) {
-        return GuestToken.fromJson(res.data);
+        return Token.fromJson(res.data);
       }
     } catch(e) {}
     return null;
   }
 
-  getLoginToken({String username, String password}) async {
+  issueLoginToken({String username, String password}) async {
     try {
       var res = await dio.post('/oauth/token',
           options: Options(headers: {
@@ -40,7 +64,8 @@ class OauthTokenRepository {
           })
       );
       if(res != null && res.statusCode == 200) {
-        return LoginToken.fromJson(res.data);
+        return Token.fromJson(res.data)
+          ..tokenMode = TokenMode.LOGIN;
       }
     } catch(e) {}
     return null;
@@ -58,7 +83,8 @@ class OauthTokenRepository {
           })
       );
       if(res != null && res.statusCode == 200) {
-        return LoginToken.fromJson(res.data);
+        return Token.fromJson(res.data)
+          ..tokenMode = TokenMode.LOGIN;
       }
     } catch(e) {}
     return null;

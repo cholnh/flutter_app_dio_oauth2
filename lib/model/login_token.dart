@@ -1,9 +1,10 @@
 import 'package:flutter_app_dio_1/model/token.dart';
 
+@deprecated
 class LoginToken extends Token {
   final String refreshToken;
 
-  const LoginToken({accessToken, tokenType, expiresIn, scope, this.refreshToken}) : super(
+  LoginToken({accessToken, tokenType, expiresIn, scope, this.refreshToken}) : super(
       accessToken: accessToken,
       tokenType: tokenType,
       expiresIn: expiresIn,
