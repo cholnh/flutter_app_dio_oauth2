@@ -70,4 +70,36 @@ void main() {
     expect(isValidToken, true);
     expect(isInValidToken, false);
   });
+
+  test('Oauth Token Repository Test - getToken()', () async {
+    // Given
+    Token token;
+    bool isValidToken;
+
+    // When
+    token = await oauthTokenRepository.getToken()
+        .catchError((err) async {
+          await oauthTokenRepository.serverHealthCheck() == 'UP'
+            ? print('server up')    // 사용자 네트워크 문제일 가능성 높음
+            : print('server down'); // 서버 점검 중 공지 띄우기
+    });
+    isValidToken = await oauthTokenRepository.isValid(accessToken: token.accessToken);
+
+    // Then
+    expect(token.accessToken != null, true);
+    expect(token.refreshToken == null, true);
+    expect(token.tokenMode, TokenMode.GUEST);
+    expect(isValidToken, true);
+  });
+
+  test('Oauth Token Repository Test - serverHealthCheck()', () async {
+    // Given
+    String serverHealth;
+
+    // When
+    serverHealth = await oauthTokenRepository.serverHealthCheck();
+
+    // Then
+    expect(serverHealth, 'UP');
+  });
 }
