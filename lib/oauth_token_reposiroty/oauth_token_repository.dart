@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_app_dio_1/model/token.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../dio/dio_core.dart';
 import 'oauth_token_info.dart';
@@ -11,9 +10,8 @@ class OauthTokenRepository {
 
   Future<Token> getToken() async {
     try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      Token _token = prefs.get('__oauth_token__') ?? await issueGuestToken();
-      // TODO: _token = innerDB.getObject('token');
+      Token _token = await Token().loadFromDisk()
+          ?? await issueGuestToken();
 
       _token = await isValid(accessToken: _token.accessToken)
           ? _token
@@ -21,8 +19,7 @@ class OauthTokenRepository {
             ? await issueGuestToken()
             : await refreshLoginToken(refreshToken: _token.refreshToken);
 
-      // prefs.setString('__oauth_token__', _token.accessToken);
-      // TODO: innerDB.setObject('token', _token);
+      _token.saveToDisk();
       return _token;
     } catch(e) {
       return await issueGuestToken();

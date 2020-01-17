@@ -1,6 +1,7 @@
 import 'package:flutter_app_dio_1/model/token.dart';
 import 'package:flutter_app_dio_1/oauth_token_reposiroty/oauth_token_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   OauthTokenRepository oauthTokenRepository = OauthTokenRepository();
@@ -73,6 +74,8 @@ void main() {
 
   test('Oauth Token Repository Test - getToken()', () async {
     // Given
+    SharedPreferences.setMockInitialValues({});
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     Token token;
     bool isValidToken;
 
@@ -87,9 +90,13 @@ void main() {
 
     // Then
     expect(token.accessToken != null, true);
-    expect(token.refreshToken == null, true);
-    expect(token.tokenMode, TokenMode.GUEST);
     expect(isValidToken, true);
+    expect(token.tokenMode == TokenMode.GUEST ? 'guest' : 'login', prefs.get('__oauth_tokenMode__'));
+    expect(token.accessToken, prefs.get('__oauth_accessToken__'));
+    expect(token.tokenType, prefs.get('__oauth_tokenType__'));
+    expect(token.expiresIn, prefs.get('__oauth_expiresIn__'));
+    expect(token.scope, prefs.get('__oauth_scope__'));
+    expect(token.refreshToken, prefs.get('__oauth_refreshToken__'));
   });
 
   test('Oauth Token Repository Test - serverHealthCheck()', () async {

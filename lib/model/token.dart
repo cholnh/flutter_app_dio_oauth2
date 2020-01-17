@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum TokenMode { GUEST, LOGIN }
 
@@ -16,7 +17,7 @@ class Token {
     @required this.expiresIn,
     @required this.scope,
     @required this.refreshToken,
-    tokenMode = TokenMode.GUEST});
+    @required this.tokenMode});
 
   Token.fromJson(Map<String, dynamic> json) :
       tokenMode = TokenMode.GUEST,
@@ -25,6 +26,57 @@ class Token {
       expiresIn = json['expires_in'],
       scope = json['scope'],
       refreshToken = json['refresh_token'];
+
+  Future<Token> loadFromDisk() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      String strTokenMode = prefs.get('__oauth_tokenMode__');
+      assert(strTokenMode != null);
+
+      if(strTokenMode == 'guest') {
+        tokenMode = TokenMode.GUEST;
+      } else if(strTokenMode == 'login') {
+        tokenMode = TokenMode.LOGIN;
+        refreshToken = prefs.get('__oauth_refreshToken__');
+        assert(refreshToken != null);
+      } else {
+        assert(false);
+      }
+
+      accessToken = prefs.get('__oauth_accessToken__');
+      assert(accessToken != null);
+
+      tokenType = prefs.get('__oauth_tokenType__');
+      assert(tokenType != null);
+
+      expiresIn = prefs.get('__oauth_expiresIn__');
+      assert(expiresIn != null);
+
+      scope = prefs.get('__oauth_scope__');
+      assert(scope != null);
+
+      return this;
+    } catch (e) {}
+    return null;
+  }
+
+
+  saveToDisk() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if(tokenMode == TokenMode.GUEST) {
+      prefs.setString('__oauth_tokenMode__', 'guest');
+    } else if(tokenMode == TokenMode.LOGIN) {
+      prefs.setString('__oauth_tokenMode__', 'login');
+      prefs.setString('__oauth_refreshToken__', refreshToken);
+    }
+
+    prefs.setString('__oauth_accessToken__', accessToken);
+    prefs.setString('__oauth_tokenType__', tokenType);
+    prefs.setInt('__oauth_expiresIn__', expiresIn);
+    prefs.setString('__oauth_scope__', scope);
+  }
 
   @override
   String toString() {
