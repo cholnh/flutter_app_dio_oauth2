@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_app_dio_1/contatnt.dart' as g;
 
 class DioCore {
 
@@ -13,9 +14,9 @@ class DioCore {
 
   DioCore._internal() {
     final BaseOptions options = BaseOptions(
-      baseUrl: 'https://www.pomangam.com:9530/api/v1',
-      connectTimeout: 5000,
-      receiveTimeout: 3000,
+      baseUrl: g.serverDomain,
+      connectTimeout: g.connectTimeout,
+      receiveTimeout: g.receiveTimeout,
     );
 
     oauth = Dio(options);

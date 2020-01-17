@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_app_dio_1/contatnt.dart' as g;
 import 'package:flutter_app_dio_1/model/token.dart';
 
 import '../dio/dio_core.dart';
-import 'oauth_token_info.dart';
 
 class OauthTokenRepository {
 
@@ -47,11 +47,10 @@ class OauthTokenRepository {
     return false;
   }
 
-  @visibleForTesting
   Future<Token> issueGuestToken() async {
     var res = await DioCore().oauth.post('/oauth/token',
         options: Options(headers: {
-          'Authorization': 'Basic ' + guestOauthTokenHeader
+          'Authorization': 'Basic ' + g.guestOauthTokenHeader
         }),
         data: FormData.fromMap({
           'grant_type': 'client_credentials'
@@ -63,11 +62,10 @@ class OauthTokenRepository {
     return null;
   }
 
-  @visibleForTesting
   Future<Token> issueLoginToken({String username, String password}) async {
     var res = await DioCore().oauth.post('/oauth/token',
         options: Options(headers: {
-          'Authorization': 'Basic ' + loginOauthTokenHeader
+          'Authorization': 'Basic ' + g.loginOauthTokenHeader
         }),
         data: FormData.fromMap({
           'grant_type': 'password',
@@ -82,11 +80,10 @@ class OauthTokenRepository {
     return null;
   }
 
-  @visibleForTesting
   Future<Token> refreshLoginToken({String refreshToken}) async {
     var res = await DioCore().oauth.post('/oauth/token',
         options: Options(headers: {
-          'Authorization': 'Basic ' + loginOauthTokenHeader
+          'Authorization': 'Basic ' + g.loginOauthTokenHeader
         }),
         data: FormData.fromMap({
           'grant_type': 'refresh_token',
