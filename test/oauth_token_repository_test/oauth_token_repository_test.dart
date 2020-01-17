@@ -18,7 +18,7 @@ void main() {
     // Then
     expect(guestToken.accessToken != null, true);
     expect(guestToken.refreshToken == null, true);
-    expect(guestToken.tokenMode, TokenMode.GUEST);
+    expect(guestToken.tokenMode, equals(TokenMode.GUEST));
     expect(isValidToken, true);
   });
 
@@ -34,7 +34,7 @@ void main() {
     // Then
     expect(loginToken.accessToken != null, true);
     expect(loginToken.refreshToken != null, true);
-    expect(loginToken.tokenMode, TokenMode.LOGIN);
+    expect(loginToken.tokenMode, equals(TokenMode.LOGIN));
     expect(isValidToken, true);
   });
 
@@ -51,8 +51,8 @@ void main() {
     expect(refreshedToken.accessToken != null, true);
     expect(refreshedToken.refreshToken != null, true);
     expect(refreshedToken.accessToken != loginToken.accessToken, true);
-    expect(refreshedToken.refreshToken == loginToken.refreshToken, true);
-    expect(refreshedToken.tokenMode, TokenMode.LOGIN);
+    expect(refreshedToken.refreshToken, equals(loginToken.refreshToken));
+    expect(refreshedToken.tokenMode, equals(TokenMode.LOGIN));
     expect(await oauthTokenRepository.isValid(accessToken: refreshedToken.accessToken), true);
     expect(await oauthTokenRepository.isValid(accessToken: refreshedToken.refreshToken), false);
   });
@@ -91,12 +91,12 @@ void main() {
     // Then
     expect(token.accessToken != null, true);
     expect(isValidToken, true);
-    expect(token.tokenMode == TokenMode.GUEST ? 'guest' : 'login', prefs.get('__oauth_tokenMode__'));
-    expect(token.accessToken, prefs.get('__oauth_accessToken__'));
-    expect(token.tokenType, prefs.get('__oauth_tokenType__'));
-    expect(token.expiresIn, prefs.get('__oauth_expiresIn__'));
-    expect(token.scope, prefs.get('__oauth_scope__'));
-    expect(token.refreshToken, prefs.get('__oauth_refreshToken__'));
+    expect(token.tokenMode == TokenMode.GUEST ? 'guest' : 'login', equals(prefs.get('__oauth_tokenMode__')));
+    expect(token.accessToken, equals(prefs.get('__oauth_accessToken__')));
+    expect(token.tokenType, equals(prefs.get('__oauth_tokenType__')));
+    expect(token.expiresIn, equals(prefs.get('__oauth_expiresIn__')));
+    expect(token.scope, equals(prefs.get('__oauth_scope__')));
+    expect(token.refreshToken, equals(prefs.get('__oauth_refreshToken__')));
   });
 
   test('Oauth Token Repository Test - serverHealthCheck()', () async {
@@ -107,6 +107,6 @@ void main() {
     serverHealth = await oauthTokenRepository.serverHealthCheck();
 
     // Then
-    expect(serverHealth, 'UP');
+    expect(serverHealth, equals('UP'));
   });
 }

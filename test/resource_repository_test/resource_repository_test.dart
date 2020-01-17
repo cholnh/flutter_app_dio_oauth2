@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:dio/dio.dart';
 import 'package:flutter_app_dio_1/dio/dio_core.dart';
 import 'package:flutter_app_dio_1/model/token.dart';
 import 'package:flutter_app_dio_1/oauth_token_reposiroty/oauth_token_repository.dart';
@@ -8,9 +5,19 @@ import 'package:flutter_app_dio_1/resource_repository/resouces_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  OauthTokenRepository oauthTokenRepository = OauthTokenRepository();
-  ResourceRepository resourceRepository = ResourceRepository();
-  DioCore dio = DioCore(); // sington instance access
+  OauthTokenRepository oauthTokenRepository;
+  ResourceRepository resourceRepository;
+  DioCore dio;
+
+  setUp(() async {
+    oauthTokenRepository = OauthTokenRepository();
+    resourceRepository = ResourceRepository();
+    dio = DioCore(); // singleton instance access
+  });
+
+  tearDown(() async {
+
+  });
 
   test('Token Test - get()', () async {
     // Given
@@ -28,9 +35,9 @@ void main() {
 
     // Then
     expect(token.accessToken != null, true);
-    expect(res, 'this is home');
+    expect(res, equals('this is home'));
 
-    // header에 직접 삽입되는 것이 아니라, interceptor를 통해 append 됨.
+    // header 에 직접 삽입되는 것이 아니라, interceptor 를 통해 append 됨.
     expect(dio.resource.options.headers.containsKey(key), false);
     expect(dio.resource.options.headers.containsValue(val), false);
   });

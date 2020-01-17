@@ -4,11 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  tearDown(() async {
+
+  });
 
   test('Token Test - loadFromDisk()', () async {
     // Given
-    SharedPreferences.setMockInitialValues({});
     Token token1 = Token(
         accessToken: 'acctoken1234',
         tokenType: 'type',
@@ -19,15 +26,15 @@ void main() {
     Token token2;
 
     // When
-    token1 = await token1.saveToDisk();
+    await token1.saveToDisk();
     token2 = await Token().loadFromDisk();
 
     // Then
-    expect(token1.accessToken, token2.accessToken);
-    expect(token1.tokenType, token2.tokenType);
-    expect(token1.expiresIn, token2.expiresIn);
-    expect(token1.scope, token2.scope);
-    expect(token1.refreshToken, token2.refreshToken);
-    expect(token1.tokenMode, token2.tokenMode);
+    expect(token1.accessToken, equals(token2.accessToken));
+    expect(token1.tokenType, equals(token2.tokenType));
+    expect(token1.expiresIn, equals(token2.expiresIn));
+    expect(token1.scope, equals(token2.scope));
+    expect(token1.refreshToken, equals(token2.refreshToken));
+    expect(token1.tokenMode, equals(token2.tokenMode));
   });
 }
