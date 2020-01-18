@@ -42,4 +42,19 @@ void main() {
     expect(dio.resource.options.headers.containsValue(val), false);
   });
 
+  test('Token Test - get() with oauthTokenRepository.getToken()', () async {
+    // Given
+    final String url = '/';
+    Token token;
+    var res;
+
+    // When
+    token = await oauthTokenRepository.getToken();
+    res = await resourceRepository.get(url: url);
+
+    // Then
+    expect(token.accessToken != null, true);
+    expect(res, equals('this is home'));
+  });
+
 }
