@@ -5,13 +5,9 @@ import 'package:flutter_app_dio_1/resource_repository/resouces_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  OauthTokenRepository oauthTokenRepository;
-  ResourceRepository resourceRepository;
   DioCore dio;
 
   setUp(() async {
-    oauthTokenRepository = OauthTokenRepository();
-    resourceRepository = ResourceRepository();
     dio = DioCore(); // singleton instance access
   });
 
@@ -27,11 +23,11 @@ void main() {
     String key, val;
 
     // When
-    token = await oauthTokenRepository.issueGuestToken();
+    token = await OauthTokenRepository.issueGuestToken();
     key = 'Authorization';
     val = 'Bearer '+token.accessToken;
     dio.addResourceHeader({key: val});
-    res = await resourceRepository.get(url: url);
+    res = await ResourceRepository.get(url: url);
 
     // Then
     expect(token.accessToken != null, true);
@@ -49,8 +45,8 @@ void main() {
     var res;
 
     // When
-    token = await oauthTokenRepository.getToken();
-    res = await resourceRepository.get(url: url);
+    token = await OauthTokenRepository.loadToken();
+    res = await ResourceRepository.get(url: url);
 
     // Then
     expect(token.accessToken != null, true);

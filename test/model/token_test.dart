@@ -1,20 +1,17 @@
+import 'package:flutter_app_dio_1/dio/dio_core.dart';
 import 'package:flutter_app_dio_1/model/token.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
 
   setUp(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    SharedPreferences.setMockInitialValues({});
   });
 
   tearDown(() async {
-
   });
 
-  test('Token Test - loadFromDisk()', () async {
+  test('Token Test - saveToDisk(), loadFromDisk()', () async {
     // Given
     Token token1 = Token(
         accessToken: 'acctoken1234',
@@ -26,8 +23,9 @@ void main() {
     Token token2;
 
     // When
+    SharedPreferences.setMockInitialValues({});
     await token1.saveToDisk();
-    token2 = await Token().loadFromDisk();
+    token2 = await Token.loadFromDisk();
 
     // Then
     expect(token1.accessToken, equals(token2.accessToken));

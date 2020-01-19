@@ -5,7 +5,7 @@ import '../dio/dio_core.dart';
 
 class ResourceRepository {
 
-  get({
+  static get({
     @required String url,
     Locale locale,
   }) async {
@@ -20,7 +20,7 @@ class ResourceRepository {
     return null;
   }
 
-  post({
+  static post({
     @required String url,
     Locale locale,
     FormData formData

@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  OauthTokenRepository oauthTokenRepository = OauthTokenRepository();
 
   test('Oauth Token Repository Test - issueGuestToken()', () async {
     // Given
@@ -12,8 +11,8 @@ void main() {
     bool isValidToken;
 
     // When
-    guestToken = await oauthTokenRepository.issueGuestToken();
-    isValidToken = await oauthTokenRepository.isValid(accessToken: guestToken.accessToken);
+    guestToken = await OauthTokenRepository.issueGuestToken();
+    isValidToken = await OauthTokenRepository.isValid(accessToken: guestToken.accessToken);
 
     // Then
     expect(guestToken.accessToken != null, true);
@@ -28,8 +27,8 @@ void main() {
     bool isValidToken;
 
     // When
-    loginToken = await oauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
-    isValidToken = await oauthTokenRepository.isValid(accessToken: loginToken.accessToken);
+    loginToken = await OauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
+    isValidToken = await OauthTokenRepository.isValid(accessToken: loginToken.accessToken);
 
     // Then
     expect(loginToken.accessToken != null, true);
@@ -44,8 +43,8 @@ void main() {
     Token refreshedToken;
 
     // When
-    loginToken = await oauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
-    refreshedToken = await oauthTokenRepository.refreshLoginToken(refreshToken: loginToken.refreshToken);
+    loginToken = await OauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
+    refreshedToken = await OauthTokenRepository.refreshLoginToken(refreshToken: loginToken.refreshToken);
 
     // Then
     expect(refreshedToken.accessToken != null, true);
@@ -53,8 +52,8 @@ void main() {
     expect(refreshedToken.accessToken != loginToken.accessToken, true);
     expect(refreshedToken.refreshToken, equals(loginToken.refreshToken));
     expect(refreshedToken.tokenMode, equals(TokenMode.LOGIN));
-    expect(await oauthTokenRepository.isValid(accessToken: refreshedToken.accessToken), true);
-    expect(await oauthTokenRepository.isValid(accessToken: refreshedToken.refreshToken), false);
+    expect(await OauthTokenRepository.isValid(accessToken: refreshedToken.accessToken), true);
+    expect(await OauthTokenRepository.isValid(accessToken: refreshedToken.refreshToken), false);
   });
 
   test('Oauth Token Repository Test - isValid()', () async {
@@ -63,9 +62,9 @@ void main() {
     bool isValidToken, isInValidToken;
 
     // When
-    normalToken = await oauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
-    isValidToken = await oauthTokenRepository.isValid(accessToken: normalToken.accessToken);
-    isInValidToken = await oauthTokenRepository.isValid(accessToken: 'this-is-abnormal-token');
+    normalToken = await OauthTokenRepository.issueLoginToken(username: 'admin', password: '1234');
+    isValidToken = await OauthTokenRepository.isValid(accessToken: normalToken.accessToken);
+    isInValidToken = await OauthTokenRepository.isValid(accessToken: 'this-is-abnormal-token');
 
     // Then
     expect(isValidToken, true);
@@ -80,13 +79,18 @@ void main() {
     bool isValidToken;
 
     // When
-    token = await oauthTokenRepository.getToken()
+    token = await OauthTokenRepository.loadToken()
         .catchError((err) async {
-          await oauthTokenRepository.serverHealthCheck() == 'UP'
+          await OauthTokenRepository.serverHealthCheck() == 'UP'
             ? print('server up')    // 사용자 네트워크 문제일 가능성 높음
             : print('server down'); // 서버 점검 중 공지 띄우기
     });
-    isValidToken = await oauthTokenRepository.isValid(accessToken: token.accessToken);
+
+    token
+      .saveToDioHeader()  // dio http header 추가
+      .saveToDisk();      // shared preference 저장
+
+    isValidToken = await OauthTokenRepository.isValid(accessToken: token.accessToken);
 
     // Then
     expect(token.accessToken != null, true);
@@ -104,7 +108,7 @@ void main() {
     String serverHealth;
 
     // When
-    serverHealth = await oauthTokenRepository.serverHealthCheck();
+    serverHealth = await OauthTokenRepository.serverHealthCheck();
 
     // Then
     expect(serverHealth, equals('UP'));

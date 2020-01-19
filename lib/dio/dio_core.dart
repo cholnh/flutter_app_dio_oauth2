@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_app_dio_1/contatnt.dart' as g;
+import 'package:flutter_app_dio_1/constant.dart' as g;
 
 class DioCore {
 

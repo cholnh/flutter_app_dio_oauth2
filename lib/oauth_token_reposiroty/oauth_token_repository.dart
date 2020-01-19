@@ -2,29 +2,24 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_app_dio_1/contatnt.dart' as g;
+import 'package:flutter_app_dio_1/constant.dart' as g;
 import 'package:flutter_app_dio_1/model/token.dart';
 
 import '../dio/dio_core.dart';
 
 class OauthTokenRepository {
 
-  Future<Token> getToken() async {
+  static Future<Token> loadToken() async {
     try {
       Token _token =
-          await Token().loadFromDisk() // shared preference 로드
+          await Token.loadFromDisk() // shared preference 로드
           ?? await issueGuestToken();
 
       _token = await isValid(accessToken: _token.accessToken)
           ? _token
           : _token.tokenMode == TokenMode.GUEST
             ? await issueGuestToken()
-            : await refreshLoginToken(refreshToken: _token.refreshToken)
-      ..saveToDisk(); // shared preference 저장
-
-      DioCore().addResourceHeader({
-        'Authorization':'Bearer '+_token.accessToken
-      }); // interceptor header 추가
+            : await refreshLoginToken(refreshToken: _token.refreshToken);
 
       return _token;
     } catch(e) {  // all error ->
@@ -33,7 +28,7 @@ class OauthTokenRepository {
   }
 
   @visibleForTesting
-  Future<bool> isValid({String accessToken}) async {
+  static Future<bool> isValid({String accessToken}) async {
     try {
       var res = await DioCore().oauth.post('/oauth/check_token',
           data: FormData.fromMap({
@@ -47,7 +42,7 @@ class OauthTokenRepository {
     return false;
   }
 
-  Future<Token> issueGuestToken() async {
+  static Future<Token> issueGuestToken() async {
     var res = await DioCore().oauth.post('/oauth/token',
         options: Options(headers: {
           'Authorization': 'Basic ' + g.guestOauthTokenHeader
@@ -62,7 +57,7 @@ class OauthTokenRepository {
     return null;
   }
 
-  Future<Token> issueLoginToken({String username, String password}) async {
+  static Future<Token> issueLoginToken({String username, String password}) async {
     var res = await DioCore().oauth.post('/oauth/token',
         options: Options(headers: {
           'Authorization': 'Basic ' + g.loginOauthTokenHeader
@@ -80,7 +75,7 @@ class OauthTokenRepository {
     return null;
   }
 
-  Future<Token> refreshLoginToken({String refreshToken}) async {
+  static Future<Token> refreshLoginToken({String refreshToken}) async {
     var res = await DioCore().oauth.post('/oauth/token',
         options: Options(headers: {
           'Authorization': 'Basic ' + g.loginOauthTokenHeader
@@ -97,7 +92,7 @@ class OauthTokenRepository {
     return null;
   }
 
-  Future<String> serverHealthCheck() async {
+  static Future<String> serverHealthCheck() async {
     var res = await DioCore().oauth.get('/application/healthCheck');
     if(res != null && res.statusCode == 200) {
       return jsonDecode(res.data)['status'];

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_app_dio_1/dio/dio_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum TokenMode { GUEST, LOGIN }
@@ -20,15 +21,19 @@ class Token {
     @required this.tokenMode});
 
   Token.fromJson(Map<String, dynamic> json) :
-      tokenMode = TokenMode.GUEST,
-      accessToken = json['access_token'],
-      tokenType = json['token_type'],
-      expiresIn = json['expires_in'],
-      scope = json['scope'],
-      refreshToken = json['refresh_token'];
+    tokenMode = TokenMode.GUEST,
+    accessToken = json['access_token'],
+    tokenType = json['token_type'],
+    expiresIn = json['expires_in'],
+    scope = json['scope'],
+    refreshToken = json['refresh_token'];
 
-  Future<Token> loadFromDisk() async {
+  static Future<Token> loadFromDisk() async {
     try {
+      String accessToken, tokenType, scope, refreshToken;
+      int expiresIn;
+      TokenMode tokenMode;
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
       String strTokenMode = prefs.get('__oauth_tokenMode__');
@@ -56,11 +61,16 @@ class Token {
       scope = prefs.get('__oauth_scope__');
       assert(scope != null);
 
-      return this;
+      return Token(
+          accessToken: accessToken,
+          tokenType: tokenType,
+          expiresIn: expiresIn,
+          scope: scope,
+          refreshToken: refreshToken,
+          tokenMode: tokenMode);
     } catch (e) {}
     return null;
   }
-
 
   saveToDisk() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -76,6 +86,14 @@ class Token {
     prefs.setString('__oauth_tokenType__', tokenType);
     prefs.setInt('__oauth_expiresIn__', expiresIn);
     prefs.setString('__oauth_scope__', scope);
+    return this;
+  }
+
+  saveToDioHeader() {
+    DioCore().addResourceHeader({
+      'Authorization':'Bearer ' + accessToken
+    }); // interceptor header 추가
+    return this;
   }
 
   @override
